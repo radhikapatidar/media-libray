@@ -22,4 +22,13 @@ async function getFromMinIO(mediaId) {
   return minioClient.getObject(process.env.MEDIA_BUCKET, mediaId);
 }
 
-module.exports = { uploadToMinIO, getFromMinIO };
+async function deleteFromMinIO(mediaId) {
+  return new Promise((resolve, reject) => {
+    minioClient.removeObject(process.env.MEDIA_BUCKET, mediaId, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
+module.exports = { uploadToMinIO, getFromMinIO,deleteFromMinIO  };

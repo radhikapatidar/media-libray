@@ -1,5 +1,5 @@
-const { uploadToMinIO, getFromMinIO } = require("../services/minioService");
-const { saveToDynamoDB, fetchMediaList, fetchMediaMetadata } = require("../services/dynamoDBService");
+const { uploadToMinIO, getFromMinIO,deleteFromMinIO  } = require("../services/minioService");
+const { saveToDynamoDB, fetchMediaList, fetchMediaMetadata,deleteFromDynamoDB  } = require("../services/dynamoDBService");
 const { v4: uuidv4 } = require("uuid");
 
 async function uploadMedia(req, res) {
@@ -58,4 +58,20 @@ async function getMedia(req, res) {
   }
 }
 
-module.exports = { uploadMedia, listMedia, getMedia };
+async function deleteMedia(req, res) {
+  try {
+    const { id } = req.params;
+    const metadata = await fetchMediaMetadata(id);
+    if (!metadata) return res.status(404).json({ error: "Media not found." });
+
+    await deleteFromMinIO(id);
+    await deleteFromDynamoDB(id);
+
+    res.status(200).json({ message: "File deleted successfully!" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error." });
+  }
+}
+
+
+module.exports = { uploadMedia, listMedia, getMedia,deleteMedia };
